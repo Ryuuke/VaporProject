@@ -14,7 +14,7 @@ struct User: SQLiteModel, Content, Migration {
 public func routes(_ router: Router) throws {
 
     router.get("hello") { req in
-        return "Hello cocoa heads !"
+        return "Hello world !"
     }
 
     router.get("users") { req -> Future<[User]> in
