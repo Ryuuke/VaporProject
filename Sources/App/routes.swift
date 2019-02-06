@@ -1,20 +1,30 @@
 import Vapor
+import FluentSQLite
+
+struct User: SQLiteModel, Content, Migration {
+    var id: Int?
+    let name: String
+
+    init(name: String) {
+        self.name = name
+    }
+}
 
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
-    // Basic "It works" example
-    router.get { req in
-        return "It works!"
-    }
-    
-    // Basic "Hello, world!" example
-    router.get("hello") { req in
-        return "Hello, world!"
+
+    router.get("users") { req -> Future<[User]> in
+        return User.query(on: req).all()
     }
 
-    // Example of configuring a controller
-    let todoController = TodoController()
-    router.get("todos", use: todoController.index)
-    router.post("todos", use: todoController.create)
-    router.delete("todos", Todo.parameter, use: todoController.delete)
+    router.post(User.self, at: "user") { req, user -> Future<User> in
+        return user.save(on: req)
+    }
+
+    router.get("user", Int.parameter) { req -> Future<User> in
+        let id = try req.parameters.next(Int.self)
+        return User
+            .find(id, on: req)
+            .unwrap(or: Abort(.badGateway))
+    }
 }
